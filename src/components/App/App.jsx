@@ -3,7 +3,7 @@ import ImageGallery from "components/ImageGallery/ImageGallery";
 import Loader from "components/Loader/Loader";
 import Modal from "components/Modal/Modal";
 import Searchbar from "components/Searchbar/Searchbar";
-import getImages from "components/services/api";
+import getImages from "services/api"
 import React, { Component } from "react";
 import { AppDiv } from "./App.styled";
 
@@ -15,11 +15,12 @@ export class App extends Component {
     status: 'idle',
     isLoading: null,
     showModal: false,
-    selectedImageUrl: "",
+      selectedImageUrl: "",
+    loadMore: null,
   }
 
   getInputValue = value => {
-    this.setState({ inputValue: value, page: 1, pictures: [],status: 'loading' })
+    this.setState({ inputValue: value, page: 1, pictures: []})
     }
     
     getLargeImgUrl = imgUrl => {
@@ -43,10 +44,6 @@ toggleModal = () => {
           this.setState({ status: 'idle' });
           return;
         }
-        this.setState((prevState) => ({
-          pictures: [...prevState.pictures, ...hits],
-          status: 'idle',
-        }));
       })
       .catch((error) => {
         console.error(error);
@@ -58,11 +55,14 @@ toggleModal = () => {
     };
     
     handleLoadMore = () => {
+  this.setState(prevState => ({
+    page: prevState.page + 1,
+    status: 'loading',
+  }), () => {
     const { inputValue, page } = this.state;
-    const nextPage = page + 1;
-    this.setState({ page: nextPage, status: 'loading' });
-    this.fetchImages(inputValue, nextPage);
-    };
+    this.fetchImages(inputValue, page);
+  });
+};
     
   componentDidUpdate(_, prevState) {
     const { page, inputValue } = this.state;
@@ -92,7 +92,7 @@ toggleModal = () => {
              {this.state.status === 'loading' && <Loader />}
             {this.state.status === 'error' && <p>Error occurred.</p>}
             {this.state.showModal && <Modal imgUrl={this.state.selectedImageUrl} onClose={this.toggleModal} />}
-            <ImageGallery pictures={this.state.pictures} onLoadMore={this.handleLoadMore} onClick={this.getLargeImgUrl}/>
+            <ImageGallery pictures={this.state.pictures} onLoadMore={this.handleLoadMore} onClick={this.getLargeImgUrl} loadMore={ this.state.loadMore} />
              
       </AppDiv>
     );

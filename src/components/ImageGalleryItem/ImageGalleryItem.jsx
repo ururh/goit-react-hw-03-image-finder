@@ -1,5 +1,6 @@
 import React from 'react';
 import { ImageItem, Item } from './ImageGalleryItem.styled';
+import PropTypes from 'prop-types'
 
 const ImageGalleryItem = ({ picture, onClickModal }) => {
    return picture.map((picture, index) => {
@@ -13,4 +14,8 @@ const ImageGalleryItem = ({ picture, onClickModal }) => {
    });
 };
 
+ImageGalleryItem.propTypes = {
+    picture: PropTypes.array.isRequired,
+    onClickModal: PropTypes.func.isRequired,
+}
 export default ImageGalleryItem;
