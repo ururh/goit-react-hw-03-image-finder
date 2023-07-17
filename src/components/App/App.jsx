@@ -15,7 +15,7 @@ export class App extends Component {
     status: 'idle',
     isLoading: null,
     showModal: false,
-      selectedImageUrl: "",
+    selectedImageUrl: "",
     loadMore: null,
   }
 
@@ -34,55 +34,44 @@ toggleModal = () => {
   }));
 };
 
-    fetchImages = (inputValue, page) => {
-        this.setState({ isLoading: true })
-        
-    getImages(inputValue, page)
-      .then((data) => {
-        const { hits } = data;
-        if (hits.length === 0) {
-          this.setState({ status: 'idle' });
-          return;
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-          this.setState({ status: 'error' });
-      }).finally(() => {
-          this.setState({isLoading:false})
-      })
-        ;
-    };
+fetchImages = () => {
+  const { inputValue, page } = this.state;
+
+  this.setState({ isLoading: true });
+
+  getImages(inputValue, page)
+    .then((data) => {
+      const { hits } = data;
+      if (hits.length === 0) {
+        this.setState({ status: 'idle', isLoading: false });
+      } else {
+        this.setState(prevState => ({
+          pictures: [...prevState.pictures, ...hits],
+          status: 'idle',
+          loadMore: 12 - hits.length,
+          isLoading: false
+        }));
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      this.setState({ status: 'error', isLoading: false });
+    });
+};
+
     
     handleLoadMore = () => {
   this.setState(prevState => ({
     page: prevState.page + 1,
     status: 'loading',
-  }), () => {
-    const { inputValue, page } = this.state;
-    this.fetchImages(inputValue, page);
-  });
+  }));
 };
     
   componentDidUpdate(_, prevState) {
-    const { page, inputValue } = this.state;
-
     if (
       prevState.page !== this.state.page ||
       prevState.inputValue !== this.state.inputValue
-    ) {
-      this.setState({ status: 'loading' });
-
-      getImages(inputValue, page)
-        .then(e =>
-          this.setState(prevState => ({
-            pictures: [...prevState.pictures, ...e.hits],
-            status: 'idle',
-            loadMore: 12 - e.hits.length,
-          }))
-        )
-        .catch(error => console.log(error));
-    }
+    ) this.fetchImages();
   }
 
   render() {
